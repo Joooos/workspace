@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rango.models import Category, Page
 from rango.forms import CategoryForm, PageForm
+from rango.forms import UserForm, UserProfileForm
 
 #在views.py中，一个函数就是一个视图，视图函数至少有一个参数，即一个HttpRequest对象，还必须返回一个HttpResponse对象
 
@@ -30,7 +31,9 @@ def index(request):
 
 def about(request):
     #return HttpResponse("Rango says here is the about page.<br/> <a href='/rango/'>Index</a>")
-    return render(request, 'rango/about.html')
+    print(request.method)
+    print(request.user)
+    return render(request, 'rango/about.html', {})
 
 def show_category(request, category_name_slug):
     # 创建上下文字典，稍后传给模板渲染引擎
@@ -110,4 +113,66 @@ def add_page(request, category_name_slug):
 
     context_dict = {'form': form, 'category': category}
     return render(request, 'rango/add_page.html', context_dict)
+
+def register(request):
+    # 告诉模板注册是否成功
+    registered = False
+
+    if request.method == 'POST':
+        # 获取原始表单数据
+        user_form = UserForm(data=request.POST)
+        profile_form = UserProfileForm(data=request.POST)
+
+        # 数据有效
+        if user_from.is_valid() and profile_form.is_valid():
+            # 把 UserForm 中的数据存入数据库
+            user = user_form.save()
+
+            # 使用set_password 方法计算密码哈希值
+            # 然后更新 user 对象
+            user.set_password(user.password)
+            user.save()
+
+            # 处理UserProfile 实例
+            # 因为要自行处理 user 属性，所以设定commit=False
+            # 延迟保存模型，以防出现完整性问题
+            profile = profile_form.save(commit=False)
+            profile.user = user
+
+            # 头像文件
+            if 'picture' in request.FILES:
+                profile.picture = request.FILES['picture']
+
+            # 保存
+            profile.save()
+
+            # 更新变量的值，告诉模板成功注册了
+            registered = True
+
+        else:
+            # 表单数据无效
+            # 打印问题
+            print(user_form.errors, profile_form.errors)
+    else:
+        # 不是 HTTP POST 请求， 渲染两个 ModelFrom 实例
+        # 表单为空，待用户填写
+        user_form = UserForm()
+        profile_form = UserProfileForm()
+
+    return render(request,
+                  'rango/register.html',
+                  {'user_form':user_form,
+                   'profile_form':profile_form,
+                   registered: registered})
+
+
+
+
+
+
+
+
+
+
+
 

@@ -1,5 +1,6 @@
 from django.db import models
 from django.template.defaultfilters import slugify
+from  django.contrib.auth.models import User # 引用默认的User模型
 
 # Create your models here.
 # 默认情况下，每个模型都有一个自增整数字段，名为id，这个字段自动分配，用作主键
@@ -27,3 +28,16 @@ class Page(models.Model):
 
     def __str__(self):
         return self.title
+
+class UserProfile(models.Model):
+    # 这一行是必须的
+    # 建立与 User 模型之间的关系
+    user = models.OneToOneField(User)
+
+    # 想增加的属性
+    website = models.URLField(blank=True)   # 可以为空
+    picture = models.ImageField(upload_to='profile_images', blank=True)  # 可以为空
+
+    # 覆盖 __str__() 方法，返回有意义的字符串
+    def __str__(self):
+        return self.user.username

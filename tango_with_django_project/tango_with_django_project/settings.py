@@ -35,8 +35,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
+    'django.contrib.auth',  # 用于访问Django提供的身份验证系统
+    'django.contrib.contenttypes',  # 供auth应用跟踪数据库中的模型
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -90,12 +90,14 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
+# 密码验证器 每个验证器都有OPTIONS 字典(便于自定义)
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': { 'min_length': 8, }
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -133,3 +135,11 @@ MEDIA_URL = '/media/' #指明通过什么URL伺服媒体文件
 # print(os.path.dirname(os.path.dirname(__file__)))
 # print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # print(BASE_DIR)
+
+# Password Hash
+# 哈希算法的顺序很重要，Django将使用PASSWORD_HASHERS 中的第一个哈希算法(setting.PASSWORD_HASHERS[0])
+# 更安全的哈希算法 pip install bcrypt (SHA256)
+PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+)
