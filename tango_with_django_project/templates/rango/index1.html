@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+{% load staticfiles %}
+<!-- 告诉Django模板引擎，将在模板中引用静态文件 -->
+
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge"> -->
+    <title>Rango</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css" /> -->
+    
+    <!--
+    如何引入css
+    <link rel="stylesheet" href="{% static "css/base.css" %}"/>
+    如何引入javascript
+    <script src="{% static "js/jquery.js" %}"></script>
+    -->
+
+</head>
+
+<body>
+    <h1>Rango says...</h1>
+    <div>hey there partner!</div><br/>
+    <strong>Most Liked Categories</strong>
+    <div>
+    {% if categories %}
+    <ul> <!-- html无序列表标签 -->
+        {% for category in categories %}
+        <li>
+            <a href="/rango/category/{{ category.slug }}">{{ category.name }}</a>
+        </li> <!-- 列表项目标签-->
+        {% endfor %}
+    </ul>
+    {% else %}
+        <strong>There are no categories present.</strong>
+    {% endif %}
+    </div>
+
+    <strong>Most Viewed Pages</strong>
+    <div>
+    {% if pages %}
+    <ul>
+        {% for page in pages %}
+        <li>
+            <a href="{{ page.url }}">{{ page.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <strong>There are no pages present.</strong>
+    {% endif %}
+    </div>    
+    <div>
+        <a href="/rango/about/">About Rango</a><br />
+        <a href="/rango/add_category/">Add a New Category</a><br/>
+        <img src="{% static "images/rango.jpg" %}" alt="Picture of Rango" /> <!-- 告诉Django，想显示静态目录中名为images/rango.jpg的图像 -->
+    </div>
+</body>
+
+</html>

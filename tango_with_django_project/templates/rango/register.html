@@ -1,0 +1,26 @@
+{% extends 'rango/base.html' %}
+{% load staticfiles %}
+
+{% block title_block %}
+    Register
+{% endblock %}
+
+{% block body_block %}
+    <h1>Register</h1>
+    {% if registered %}
+        Rango says: <strong>Thank u for registering!</strong>
+        <a href="{% url 'index' %}">return to the homepage.</a><br/>
+    {% else %}
+        Rango says: <strong>Register here!</strong>
+        <!-- 上传文件要将enctype属性设为 multipart/form-data -->
+        <form id="user_form" method="POST" action="{% url 'register' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- 显示每个表单 as_p 模板函数 -->
+        {{ user_form.as_p }}
+        {{ profile_form.as_p }}
+
+        <input type="submit" name="submit" value="Register" />
+        </form>
+    {% endif %}
+{% endblock %} 

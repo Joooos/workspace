@@ -1,0 +1,19 @@
+<ul><!-- c == act_cat 检查显示的分类与for循环当前遍历的分类是否相同，如果相同通过strong加粗 -->
+    {% if cats %}
+        {% for c in cats %}
+            {% if c == act_cat %}
+                <li>
+                <strong>
+                    <a href="{% url 'show_category' c.slug %}">{{ c.name }}</a>
+                </strong>
+                </li>
+            {% else %}
+                <li>
+                    <a href="{% url 'show_category' c.slug %}">{{ c.name }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+    <li><strong>There are no categories present.</strong></li>
+    {% endif %}
+</ul>

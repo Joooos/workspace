@@ -1,6 +1,6 @@
 from django.db import models
 from django.template.defaultfilters import slugify
-from  django.contrib.auth.models import User # 引用默认的User模型
+from django.contrib.auth.models import User # 引用默认的User模型
 
 # Create your models here.
 # 默认情况下，每个模型都有一个自增整数字段，名为id，这个字段自动分配，用作主键

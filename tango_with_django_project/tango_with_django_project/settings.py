@@ -14,10 +14,12 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')          #指向BASE_DIR目录下的templates目录，另外拼接系统路径一定要使用os.path.join()函数，目的是使用正确的路径分隔符，因为不同操作系统的路径分隔符不一样。
-STATIC_DIR = os.path.join(BASE_DIR, 'static')   #指向BASE_DIR目录下的static目录
+TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')          # 指向BASE_DIR目录下的templates目录，另外拼接系统路径一定要使用os.path.join()函数，目的是使用正确的路径分隔符，因为不同操作系统的路径分隔符不一样。
+STATIC_DIR = os.path.join(BASE_DIR, 'static')   # 指向BASE_DIR目录下的static目录
 MEDIA_DIR = os.path.join(BASE_DIR, 'media')
-STATICFILES_DIRS = [STATIC_DIR, ]   #这个数据结构的值是一系列路径，让Django在其中寻找要伺服的静态文件
+STATICFILES_DIRS = [STATIC_DIR, ]   # 这个数据结构的值是一系列路径，让Django在其中寻找要伺服的静态文件
+LOGIN_URL = '/rango/login/'     # 未登录时的重定向地址
+# LOGIN_URL = '/accounts/login/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rango',
+    'registration'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -143,3 +146,22 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
 )
+
+# django-registration-redux 需要的几个配置变量
+# 设为 True, 允许用户注册
+REGISTRATION_OPEN = True
+# 留一周的激活时间；亦可以设置其他值
+ACCOUNT_ACTIVATION_DAYS = 7
+# 注册后自动登录
+REGISTRATION_AUTO_LOGIN = True
+# 登陆后呈现给用户的页面
+LOGIN_REDIRECT_URL = '/rango/'
+# 未登录以及访问需要验证身份的页面时重定向的页面
+# LOGIN_URL
+
+
+
+
+
+
+

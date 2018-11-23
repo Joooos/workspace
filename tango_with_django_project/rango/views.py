@@ -1,7 +1,15 @@
+from datetime import datetime
 from django.shortcuts import render
+from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import check_password
+from django.http import HttpResponseRedirect, HttpResponse
+from django.core.urlresolvers import reverse
 from rango.models import Category, Page
 from rango.forms import CategoryForm, PageForm
 from rango.forms import UserForm, UserProfileForm
+
 
 #在views.py中，一个函数就是一个视图，视图函数至少有一个参数，即一个HttpRequest对象，还必须返回一个HttpResponse对象
 
@@ -18,22 +26,38 @@ def index(request):
     # 获取前5个分类(如果分类数少于5个， 那就获取全部)
     # 把分类列表放入 context_dict 字典
     # 稍后传给模板引擎
+    request.session.set_test_cookie()
     category_list = Category.objects.order_by('-likes')[:5]     # - 号表示倒序，没有则表示升序，这里返回一个Category对象子集
     page_list = Page.objects.order_by('-views')[:5]
+
     context_dict = {'categories': category_list,
                     'pages': page_list}
+
+    # 调用处理 cookie 的辅助函数
+    visitor_cookie_handler(request)
+    context_dict['visits'] = request.session['visits']
 
     # 返回一个渲染后的相应发给客户端
     # 为了方便，我们使用的是render 函数的简短形式
     # 注意，第二个参数是我们想使用的模板
     # render函数三个参数，请求对象/模板文件名/上下文字典
-    return render(request, 'rango/index.html', context=context_dict)
+    # 提前获取 response 对象， 以便添加 cookie
+    response = render(request, 'rango/index.html', context=context_dict)
+
+    # 返回 response 对象， 更新目标 cookie
+    return response
 
 def about(request):
     #return HttpResponse("Rango says here is the about page.<br/> <a href='/rango/'>Index</a>")
+    if request.session.test_cookie_worked():
+        print("TEST COOKIE WORKED!")
+        request.session.delete_test_cookie()
     print(request.method)
     print(request.user)
-    return render(request, 'rango/about.html', {})
+    visitor_cookie_handler(request)
+    context_dict = {}
+    context_dict['visits'] = request.session['visits']
+    return render(request, 'rango/about.html', context=context_dict)
 
 def show_category(request, category_name_slug):
     # 创建上下文字典，稍后传给模板渲染引擎
@@ -124,7 +148,7 @@ def register(request):
         profile_form = UserProfileForm(data=request.POST)
 
         # 数据有效
-        if user_from.is_valid() and profile_form.is_valid():
+        if user_form.is_valid() and profile_form.is_valid():
             # 把 UserForm 中的数据存入数据库
             user = user_form.save()
 
@@ -153,6 +177,7 @@ def register(request):
             # 表单数据无效
             # 打印问题
             print(user_form.errors, profile_form.errors)
+
     else:
         # 不是 HTTP POST 请求， 渲染两个 ModelFrom 实例
         # 表单为空，待用户填写
@@ -165,14 +190,89 @@ def register(request):
                    'profile_form':profile_form,
                    registered: registered})
 
+def user_login(request):
+    if request.method == 'POST':
+        # 获取用户在登录表单中输入的用户名和密码
+        # 我们使用的是 request.POST.get('<variable>')
+        # 而不是 request.POST('<variable>')
+        # 这是因为对应的值不存在时，前者返回 None，后者抛出 KeyError 异常
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # 使用Django提供的函数检查 username/password 是否有效
+        # 有效的话返回一个 User 对象
+        user = authenticate(username=username, password=password)
+
+        # 如果得到了 User 对象
+        # 如果是 None， 说明没找到与凭据匹配的用户
+        if user:
+            # 账户激活了
+            if user.is_active:
+                # 登入账户
+                # 然后重定向到首页
+                login(request, user)
+                return HttpResponseRedirect(reverse('index'))   # reverse 函数在 Rango 应用的 urls.py 模块中查找名为 index 的 URL模式，解析出对应的 URL
+            else:
+                # 账户未激活，禁止登录
+                return HttpResponse("Your Rango account is disabled.")
+
+        else:
+            # 提供的登录凭据有问题，不能登录
+            print("Invalid login details: {0}, {1}".format(username, password))
+            return HttpResponse("Invalid login details supplied.用户名或密码错误")
 
 
+    # 不是 HTTP POST 请求，显示登录表单
+    # 极有可能是 HTTP GET 请求
+    else:
+        # 没什么上下文变量要传给模板系统
+        # 因此传入一个空字典
+        return render(request, 'rango/login.html', {})
 
+@login_required
+def restricted(request):
+    #return HttpResponse("Since u're logged in, u can see this text!")
+    return render(request, 'rango/restricted.html', {})
 
+@login_required
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect(reverse('index'))
 
+#辅助函数
+def get_server_side_cookie(request, cookie, default_val = None):
+    val = request.session.get(cookie)
+    if not val:
+        val = default_val
+    return val
 
+# 不是视图函数，是辅助函数，因为它不返回 response 对象
+def visitor_cookie_handler(request):
+    # 获取网站的访问次数
+    # 使用 COOKIES.get() 函数读取"visits" cookie
+    # 如果目标 cookie 存在，把值转换为整数
+    # 如果目标 cookie 不存在， 返回默认值 1
 
+    # visits = int(request.COOKIES.get('visit','1'))
+    # last_visit_cookie = request.COOKIES.get('last_visit', str(datetime.now()))
+    # 改成从服务器端存取 cookie
+    visits = int(get_server_side_cookie(request, 'visits', '1'))
+    last_visit_cookie = get_server_side_cookie(request, 'last_visit', str(datetime.now()))
+    last_visit_time = datetime.strptime(last_visit_cookie[:-7],
+                                        '%Y-%m-%d %H:%M:%S')
 
+    # 如果距上次访问已超过一天....
+    if (datetime.now() - last_visit_time).days > 0: # .days 改成 .seconds 只要相差一秒就能更新访问次数
+        visits = visits + 1
+        # 增加访问次数后更新 "last_visit" cookie
+        # response.set_cookie('last_visit', str(datetime.now()))
+        request.session['last_visit'] = str(datetime.now())
+    else:
+        #response.set_cookie('last_visit', last_visit_cookie)
+        request.session['last_visit'] = last_visit_cookie
+
+    #response.set_cookie('visits', visits)
+    request.session['visits'] = visits
 
 
 
