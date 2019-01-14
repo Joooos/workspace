@@ -21,7 +21,7 @@ class Category(models.Model):   #继承基类django.db.models.Model
         return self.name
 
 class Page(models.Model):
-    category = models.ForeignKey(Category)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     title = models.CharField(max_length=128)
     url = models.URLField()     #类似于Char 不过是专用于存储URL
     views = models.IntegerField(default=0)      #访问次数，存储整数
@@ -32,7 +32,7 @@ class Page(models.Model):
 class UserProfile(models.Model):
     # 这一行是必须的
     # 建立与 User 模型之间的关系
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     # 想增加的属性
     website = models.URLField(blank=True)   # 可以为空

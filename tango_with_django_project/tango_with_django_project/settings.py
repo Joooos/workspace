@@ -18,8 +18,8 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')          # 指向BASE_DIR目�
 STATIC_DIR = os.path.join(BASE_DIR, 'static')   # 指向BASE_DIR目录下的static目录
 MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 STATICFILES_DIRS = [STATIC_DIR, ]   # 这个数据结构的值是一系列路径，让Django在其中寻找要伺服的静态文件
-LOGIN_URL = '/rango/login/'     # 未登录时的重定向地址
-# LOGIN_URL = '/accounts/login/'
+# LOGIN_URL = '/rango/login/'     # 未登录时的重定向地址
+LOGIN_URL = '/accounts/login/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
@@ -43,16 +43,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rango',
-    'registration'
+    'registration',
+    'bootstrap_toolkit',
 ]
-
-MIDDLEWARE_CLASSES = [
+# MIDDLEWARE_CLASSES
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
